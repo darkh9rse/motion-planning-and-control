@@ -2,6 +2,7 @@ function skel = generate_skeleton(cspace)
 % GENERATE_SKELETON  Compute the skeleton (medial axis / Voronoi diagram)
 %                    of the free C-space for path planning.
 %
+%   skel = generate_skeleton()
 %   skel = generate_skeleton(cspace)
 %
 %   Uses the distance transform of the free space and then extracts the
@@ -16,6 +17,21 @@ function skel = generate_skeleton(cspace)
 %       skel.adjacency      - Sparse adjacency matrix of skeleton graph
 %       skel.nodes          - Graph node positions [x y]
 %       skel.clearance      - Clearance value at each skeleton point
+
+    if nargin < 1 || isempty(cspace)
+        fprintf('[generate_skeleton] No C-space input. Building default C-space...\n');
+        env = warehouse_environment();
+        robot = morphing_robot('default');
+        cspace = generate_cspace(env, robot, 12);
+    end
+
+    requiredFields = {'freeSpace2D', 'resolution', 'xVec', 'yVec'};
+    for i = 1:numel(requiredFields)
+        if ~isfield(cspace, requiredFields{i})
+            error('generate_skeleton:InvalidInput', ...
+                'Input cspace is missing required field: %s', requiredFields{i});
+        end
+    end
 
     fprintf('[generate_skeleton] Computing skeleton of free C-space ...\n');
     

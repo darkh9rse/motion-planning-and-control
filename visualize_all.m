@@ -101,23 +101,14 @@ function draw_cspace(cspace, env)
               env.xRange(2)-env.xRange(1) env.yRange(2)-env.yRange(1)], ...
               'FaceColor', [1 1 1], 'EdgeColor', 'k', 'LineWidth', 2);
 
-    % Robot bounding radius used for Minkowski expansion
-    r = cspace.resolution * ceil( ...
-        max(1, round(0.5 * (size(findobj_se(cspace),1)) )) );
-    % Fallback: derive radius from grid difference
-    % Instead, compute expansion amount from the robot info stored at creation.
-    % We approximate: expansion = robot radius (already baked into grid2D).
-    % Recover it: scan the first obstacle to measure how much it grew.
-    % Simpler approach: just use bounding radius stored in robotMode dims.
-    % Safest: re-derive from the structuring element size used in generate_cspace.
-    % Since we have the original obstacles and the grid, just draw both.
-
-    % Get robot radius from the C-space expansion
-    % Compare original obstacle grid extent vs C-space obstacle extent
-    % For simplicity, estimate from resolution and grid
-    % We'll compute it from the first obstacle
-    obs1 = env.obstacles(1,:);
-    r_est = estimate_expansion(obs1, cspace, env);
+    % Estimate robot expansion radius from the C-space grid
+    % Simple approach: use the grid resolution and estimate based on typical robot size
+    % For a 0.05m grid, robot radius is typically 0.5-1.0m
+    res = cspace.resolution;
+    obs_orig = env.obstacles(1, :);  % [x y width height]
+    
+    % Use the proper estimation function
+    r_est = estimate_expansion(obs_orig, cspace, env);
 
     % Draw Minkowski-expanded obstacles as red rectangles
     for k = 1:size(env.obstacles, 1)

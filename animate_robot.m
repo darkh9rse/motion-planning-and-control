@@ -1,6 +1,7 @@
 function animate_robot(env, path, dt)
 % ANIMATE_ROBOT  Animate the morphing robot moving along the planned path.
 %
+%   animate_robot()
 %   animate_robot(env, path)
 %   animate_robot(env, path, dt)
 %
@@ -8,14 +9,31 @@ function animate_robot(env, path, dt)
 %   as it encounters different clearance zones.
 %
 %   Inputs:
-%       env   - Warehouse environment struct
-%       path  - Path struct from plan_path()
+%       env   - Warehouse environment struct (optional)
+%       path  - Path struct from plan_path() (optional)
 %       dt    - Time step for animation (default 0.05 s)
+
+    if nargin < 1 || isempty(env)
+        fprintf('[animate_robot] No environment input. Building default environment...\n');
+        env = warehouse_environment();
+    end
+
+    if nargin < 2 || isempty(path)
+        fprintf('[animate_robot] No path input. Planning a default path...\n');
+        robot = morphing_robot('default');
+        cspace = generate_cspace(env, robot, 12);
+        skel = generate_skeleton(cspace);
+
+        startPos = [1.0, 0.5];
+        goalPos = [18.0, 13.5];
+        path = plan_path(skel, startPos, goalPos, robot);
+    end
 
     if nargin < 3
         dt = 0.05;
     end
     
+    fprintf('[animate_robot] Using file: %s\n', mfilename('fullpath'));
     fprintf('[animate_robot] Starting animation ...\n');
     
     figure('Name', 'Morphing Robot Animation', 'Color', 'w', ...

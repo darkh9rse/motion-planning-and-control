@@ -38,12 +38,15 @@ function morph_analysis = analyze_morphing(env, robot_modes)
         mode = robot_modes{k};
         rob = morphing_robot(mode);
         
-        % Generate C-space (2D only for speed - skip 3D)
-        csp = generate_cspace_2D_only(env, rob);
+        % Generate C-space (2D only for speed - fewer theta slices)
+        csp = generate_cspace(env, rob, 6);  % 6 theta slices for fast computation
+        
+        % Generate skeleton to get distance map and clearance
+        skel_temp = generate_skeleton(csp);
         
         morph_analysis.cspaces{k}     = csp;
         morph_analysis.freePercent(k)  = 100 * sum(csp.freeSpace2D(:)) / numel(csp.freeSpace2D);
-        morph_analysis.maxClearance(k) = max(csp.distMap(:));
+        morph_analysis.maxClearance(k) = max(skel_temp.distMap(:));  % Maximum clearance in this mode
         
         fprintf('%-10s | %-8.2f | %-8.2f | %10.1f %% | %10.2f m\n', ...
             mode, rob.width, rob.height, ...
